@@ -1,6 +1,9 @@
 import { gql } from '@apollo/client';
 import * as MENUS from '../constants/menus';
 import { BlogInfoFragment } from '../fragments/GeneralSettings';
+import blocks from '../wp-blocks';
+import { WordPressBlocksViewer } from '@faustwp/blocks';
+import { flatListToHierarchical } from '@faustwp/core';
 import {
   Header,
   Footer,
@@ -19,11 +22,13 @@ export default function Component(props) {
     return <>Loading...</>;
   }
 
-  const { title: siteTitle, description: siteDescription } =
-    props?.data?.generalSettings;
+  const { title: siteTitle, description: siteDescription } = props?.data?.generalSettings;
   const primaryMenu = props?.data?.headerMenuItems?.nodes ?? [];
   const footerMenu = props?.data?.footerMenuItems?.nodes ?? [];
   const { title, content, featuredImage } = props?.data?.page ?? { title: '' };
+  
+  const { editorBlocks } = props.data.page;
+  const blocks = flatListToHierarchical(editorBlocks);
 
   return (
     <>
@@ -40,9 +45,7 @@ export default function Component(props) {
       <Main>
         <>
           <EntryHeader title={title} image={featuredImage?.node} />
-          <Container>
-            <ContentWrapper content={content} />
-          </Container>
+          <WordPressBlocksViewer blocks={blocks}/>
         </>
       </Main>
       <Footer title={siteTitle} menuItems={footerMenu} />
@@ -63,6 +66,10 @@ Component.query = gql`
   ${BlogInfoFragment}
   ${NavigationMenu.fragments.entry}
   ${FeaturedImage.fragments.entry}
+  ${blocks.CoreParagraph.fragments.entry}
+  ${blocks.CoreHeading.fragments.entry}
+  ${blocks.CoreList.fragments.entry}
+  ${blocks.CoreCode.fragments.entry}
   query GetPageData(
     $databaseId: ID!
     $headerLocation: MenuLocationEnum
@@ -73,6 +80,17 @@ Component.query = gql`
       title
       content
       ...FeaturedImageFragment
+      editorBlocks(flat: false) {
+        name
+        __typename
+        renderedHtml
+        id: clientId
+        parentId: parentClientId
+        ...${blocks.CoreParagraph.fragments.key}
+        ...${blocks.CoreHeading.fragments.key}
+        ...${blocks.CoreList.fragments.key}
+        ...${blocks.CoreCode.fragments.key}
+      }
     }
     generalSettings {
       ...BlogInfoFragment
