@@ -2,6 +2,8 @@
 import { CoreBlocks } from '@faustwp/blocks';
 
 import CoreCode from './CoreCode';
+import Hero from './Hero';
+import FiftyFifty from './FiftyFifty';
 
 export default {
   // From @faustwp/blocks
@@ -21,4 +23,6 @@ export default {
   CoreCode,
 
   // Custom written IS blocks
+  Hero,
+  FiftyFifty,
 };

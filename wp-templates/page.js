@@ -27,8 +27,10 @@ export default function Component(props) {
   const footerMenu = props?.data?.footerMenuItems?.nodes ?? [];
   const { title, content, featuredImage } = props?.data?.page ?? { title: '' };
   
+  console.log( JSON.stringify(props.data, null, 2) );
+  
   const { editorBlocks } = props.data.page;
-  const blocks = flatListToHierarchical(editorBlocks);
+  const hierarchicalBlocks = flatListToHierarchical(editorBlocks);
 
   return (
     <>
@@ -43,10 +45,8 @@ export default function Component(props) {
         menuItems={primaryMenu}
       />
       <Main>
-        <>
-          <EntryHeader title={title} image={featuredImage?.node} />
-          <WordPressBlocksViewer blocks={blocks}/>
-        </>
+        <EntryHeader title={title} image={featuredImage?.node} />
+        <WordPressBlocksViewer blocks={hierarchicalBlocks}/>
       </Main>
       <Footer title={siteTitle} menuItems={footerMenu} />
     </>
@@ -66,10 +66,14 @@ Component.query = gql`
   ${BlogInfoFragment}
   ${NavigationMenu.fragments.entry}
   ${FeaturedImage.fragments.entry}
+
   ${blocks.CoreParagraph.fragments.entry}
   ${blocks.CoreHeading.fragments.entry}
   ${blocks.CoreList.fragments.entry}
   ${blocks.CoreCode.fragments.entry}
+  ${blocks.Hero.fragments.entry}
+  ${blocks.FiftyFifty.fragments.entry}
+
   query GetPageData(
     $databaseId: ID!
     $headerLocation: MenuLocationEnum
@@ -90,6 +94,8 @@ Component.query = gql`
         ...${blocks.CoreHeading.fragments.key}
         ...${blocks.CoreList.fragments.key}
         ...${blocks.CoreCode.fragments.key}
+        ...${blocks.Hero.fragments.key}
+        ...${blocks.FiftyFifty.fragments.key}
       }
     }
     generalSettings {
